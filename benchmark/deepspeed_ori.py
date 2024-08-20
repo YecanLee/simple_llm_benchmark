@@ -1,8 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import deepspeed
 import torch
 import numpy as np
-import os
 from datetime import datetime, timedelta
 import time
 from helper.text_utils import load_data, format_time, log_performance   
@@ -48,9 +50,7 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch.float16, device_map="cpu")
     model = deepspeed.init_inference(
         model=model,     
-        mp_size=1,       
-        dtype=torch.float16, 
-        replace_method="auto", 
+        dtype=torch.float16,  
         replace_with_kernel_inject=True,
     )                   
     # model.generation_config.pad_token_id = tokenizer.pad_token_id
