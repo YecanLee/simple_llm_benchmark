@@ -57,6 +57,30 @@ BUILD_EXTENSIONS=True make install
 
 To try to solve this issue, we will try to run `text-generation-inference` with docker. Then use `requests` package to send requests to the server. 
 To install `text-generation-inference` with docker, run the following command:
+__Wait a second! There is onething you need to do before you start to torture your GPU!__    
+You need to install `nvidia-container-toolkit` first, otherwise you will get this error:
+```shell
+docker: Error response from daemon: could not select device driver "" with capabilities: [[gpu]].
+```
+After you install the `nvidia-container-toolkit`, you need to restart your docker service.
+```shell
+sudo systemctl restart docker
+```
+
+A gated or privated model has to be authenticated first, you can do so by running the following command:
+```shell
+model="mistralai/Mistral-7B-v0.3"
+volume="$PWD/data"
+token=<your HF token>
+
+sudo docker run --gpus all \
+    --shm-size 1g \
+    -p 8080:80 \
+    -e HF_TOKEN=$token \
+    -v "$volume:/data" ghcr.io/huggingface/text-generation-inference:2.2.0 \
+    --model-id "$model"
+```
+Then you can run the following command to install the `text-generation-inference` with docker:
 ```shell
 model="mistralai/Mistral-7B-v0.3"
 volume="$PWD/data"
@@ -65,6 +89,11 @@ sudo docker run --gpus all --shm-size 1g -p 8080:80 -v "$volume:/data" \
     ghcr.io/huggingface/text-generation-inference:2.2.0 \
     --model-id "$model"
 ```
+To test the server has been started correctly, run the following command:
+```shell
+python develop/tgi_test.py 
+```
+If a response is returned, the server has been started correctly!
 
 ### Inference with DeepSpeedGen/DeepSpeed
 Unfortunatelly, the DeepSpeedGen package is not supporting the contrastive search decoding method, but the installation is still working fine.
@@ -88,6 +117,7 @@ All tests are ideally putted into one single folder called `benchmark`.
 
 Since the contrastive search is really slow, we will test the performance of those packages based on this decoding method.
 
+### Speed test with nvidia-optimum
 To test the fast inference with `nvidia-optimum` package, run the following commands:
 ```shell
 python benchmark/nvidia_optimum.py \
@@ -99,6 +129,25 @@ python benchmark/nvidia_optimum.py \
 --dataset wikitext
 ```
 In case the time is not correctly calculated, first 10 samples are ignored.
+
+### Speed test with DeepSpeed
+To test the fast inference with DeepSpeed package, run the following commands:
+```shell
+python benchmark/deepspeed_ori.py \
+--k 5 \
+--alpha 0.6 \
+--save_file mistralv03 \
+--save_path_prefix Mistral03-alpha10 \
+--model_name mistralai/Mistral-7B-v0.3 \
+--dataset wikitext
+```
+In case the time is not correctly calculated, first 10 samples are ignored.
+
+### Speed test with text-generation-inference
+You need to start the server first, then run the following commands:
+```shell
+# Command coming soon!
+```
 
 ### Some comments
 By checking this package's source code in `optimum-nvidia/src/optimum/nvidia/models/auto.py` file which includes the `AutoModelForCausalLM` class, it seems like only four models are supported yet, we will mainly work with `llama` and `mistral` model as they are the most important open source models.
