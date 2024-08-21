@@ -1,7 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import numpy as np
-import os
 from datetime import datetime, timedelta
 import time
 from helper.text_utils import load_data, format_time, log_performance   
@@ -16,10 +18,10 @@ torch.set_float32_matmul_precision('high' if tf32 else 'highest')
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, default="meta-llama/Llama-2-7b-hf")
-    parser.add_argument('--dataset_prefix', type=str, default='./data')
+    parser.add_argument('--model_name', type=str, default="mistralai/Mistral-7B-v0.3")
+    parser.add_argument('--dataset_prefix', type=str, default='./data_ori')
     parser.add_argument('--dataset', type=str, default='wikitext')
-    parser.add_argument('--save_path_prefix', type=str, default='Llama2-7B')
+    parser.add_argument('--save_path_prefix', type=str, default='Mistralv03')
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--k', required=True, type=int)
     parser.add_argument('--alpha', required=True, type=float)
@@ -70,8 +72,6 @@ if __name__ == '__main__':
                                            top_k=args.k, 
                                            max_new_tokens=256, 
                                            pad_token_id=tokenizer.eos_token_id)
-            print(f"Type of generated_ids: {type(generated_ids)}")
-            print(f"Shape of generated_ids: {generated_ids.shape}")
             one_generation_text = tokenizer.batch_decode(generated_ids)[0]
             if 10 <= index < 20:
                 end_time = time.time()
