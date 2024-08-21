@@ -67,6 +67,19 @@ After you install the `nvidia-container-toolkit`, you need to restart your docke
 sudo systemctl restart docker
 ```
 
+Then you can run the following command to install the `text-generation-inference` with docker:
+```shell
+model="mistralai/Mistral-7B-v0.3"
+volume="$PWD/data"
+
+sudo docker run --gpus all \
+    --shm-size 1g \
+    -p 8080:80 \
+    -v "$volume:/data" \
+    ghcr.io/huggingface/text-generation-inference:2.2.0 \
+    --model-id "$model"
+```
+
 A gated or privated model has to be authenticated first, you can do so by running the following command:
 ```shell
 model="mistralai/Mistral-7B-v0.3"
@@ -80,15 +93,7 @@ sudo docker run --gpus all \
     -v "$volume:/data" ghcr.io/huggingface/text-generation-inference:2.2.0 \
     --model-id "$model"
 ```
-Then you can run the following command to install the `text-generation-inference` with docker:
-```shell
-model="mistralai/Mistral-7B-v0.3"
-volume="$PWD/data"
 
-sudo docker run --gpus all --shm-size 1g -p 8080:80 -v "$volume:/data" \
-    ghcr.io/huggingface/text-generation-inference:2.2.0 \
-    --model-id "$model"
-```
 To test the server has been started correctly, run the following command:
 ```shell
 python develop/tgi_test.py 
@@ -146,7 +151,19 @@ In case the time is not correctly calculated, first 10 samples are ignored.
 ### Speed test with text-generation-inference
 You need to start the server first, then run the following commands:
 ```shell
-# Command coming soon!
+python benchmark/tgi_requests.py \
+--model_name mistralai/Mistral-7B-v0.3 \
+--save_path_prefix Mistralv03 \
+--k 15 \
+--alpha 0.6 \
+--save_file mistralv03
+```
+To shutdown the server after you finish the test, run the following command:
+```shell
+# find the running container id
+sudo docker ps
+# shutdown the container
+sudo docker stop -t 60 <container_id>
 ```
 
 ### Some comments
