@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import deepspeed
 import torch
@@ -17,17 +20,17 @@ torch.set_float32_matmul_precision('high' if tf32 else 'highest')
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, default="meta-llama/Llama-2-7b-hf")
-    parser.add_argument('--dataset_prefix', type=str, default='./data')
+    parser.add_argument('--model_name', type=str, default="mistralai/Mistral-7B-v0.3")
+    parser.add_argument('--dataset_prefix', type=str, default='./data_ori')
     parser.add_argument('--dataset', type=str, default='wikitext')
-    parser.add_argument('--save_path_prefix', type=str, default='Llama2-7B')
+    parser.add_argument('--save_path_prefix', type=str, default='Mistralv03')
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--k', required=True, type=int)
     parser.add_argument('--alpha', required=True, type=float)
     parser.add_argument('--save_file', required=True, type=str)
     args = parser.parse_args()
     if torch.cuda.is_available():
-        print('Cuda is available.')
+        print('Cuda is available.') 
     cuda_available = torch.cuda.is_available()
     device = torch.device(f'cuda:{args.cuda}' if cuda_available else 'cpu')
 

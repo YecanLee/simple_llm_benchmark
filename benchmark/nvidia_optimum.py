@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from transformers import AutoTokenizer
 from optimum.nvidia import AutoModelForCausalLM
 import torch
@@ -6,7 +9,7 @@ import os
 import json
 from datetime import datetime, timedelta
 import time 
-from helper.text_utils import load_data, format_time
+from helper.text_utils import load_data, format_time, log_performance
 # run faster
 tf32 = True
 torch.backends.cudnn.allow_tf32 = bool(tf32)
@@ -17,10 +20,10 @@ torch.set_float32_matmul_precision('high' if tf32 else 'highest')
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, default="meta-llama/Llama-2-7b-hf")
-    parser.add_argument('--dataset_prefix', type=str, default='./data')
+    parser.add_argument('--model_name', type=str, default="mistralai/Mistral-7B-v0.3")
+    parser.add_argument('--dataset_prefix', type=str, default='./data_ori')
     parser.add_argument('--dataset', type=str, default='wikitext')
-    parser.add_argument('--save_path_prefix', type=str, default='Llama2-7B')
+    parser.add_argument('--save_path_prefix', type=str, default='Mistralv03')
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--k', required=True, type=int)
     parser.add_argument('--alpha', required=True, type=float)
@@ -86,3 +89,10 @@ if __name__ == '__main__':
         estimated_finish_time = now + timedelta(seconds=int(approx_time))
         print(f"Current local time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Estimated finish time: {estimated_finish_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log_performance(args.model_name, 
+                        args.dataset, 
+                        args.k, 
+                        args.alpha, 
+                        average_generation_time, 
+                        approx_time, 
+                        save_path_prefix)
