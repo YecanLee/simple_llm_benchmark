@@ -26,7 +26,7 @@ pip install optimum[onnx]
 To install the optimum-nvidia package, run the following command:
 ```shell
 # You need to pin the python version to 3.10!
-conda create - n benchmark python=3.10 
+conda create -n benchmark python==3.10 
 apt-get update && apt-get -y install openmpi-bin libopenmpi-dev
 conda install mpi4py 
 python -m pip install --pre --extra-index-url https://pypi.nvidia.com optimum-nvidia
